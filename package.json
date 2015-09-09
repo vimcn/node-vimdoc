@@ -1,0 +1,32 @@
+{
+  "name": "nodoc2vimdoc",
+  "version": "1.0.0",
+  "description": "Convert Node document to Vim document.",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:hotoo/nodoc2vimdoc.git"
+  },
+  "keywords": [
+    "Node",
+    "Vim",
+    "Document",
+    "Convert"
+  ],
+  "author": "闲耘 <hotoo.cn@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hotoo/nodoc2vimdoc/issues"
+  },
+  "homepage": "https://github.com/hotoo/nodoc2vimdoc",
+  "dependencies": {
+    "co": "~4.6.0",
+    "commander": "~2.8.1",
+    "gulp": "~3.9.0",
+    "request": "~2.61.0",
+    "shelljs": "~0.5.3"
+  }
+}

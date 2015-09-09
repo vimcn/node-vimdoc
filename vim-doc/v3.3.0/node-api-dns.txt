@@ -1,0 +1,295 @@
+*node-api-dns.txt*      For Node.js module `DNS` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                                   *node-api-contents*
+
+  1. Intro                                                      |node-api-dns|
+  2. Methods                                            |node-api-dns-methods|
+    2.1. dns.lookup(hostname[, options], callback)     |node-api-dns.lookup()|
+    2.2. dns.lookupService(address, port, callback)  |node-api-dns.lookupService()|
+    2.3. dns.resolve(hostname[, rrtype], callback)    |node-api-dns.resolve()|
+    2.4. dns.resolve4(hostname, callback)            |node-api-dns.resolve4()|
+    2.5. dns.resolve6(hostname, callback)            |node-api-dns.resolve6()|
+    2.6. dns.resolveMx(hostname, callback)          |node-api-dns.resolveMx()|
+    2.7. dns.resolveTxt(hostname, callback)        |node-api-dns.resolveTxt()|
+    2.8. dns.resolveSrv(hostname, callback)        |node-api-dns.resolveSrv()|
+    2.9. dns.resolveSoa(hostname, callback)        |node-api-dns.resolveSoa()|
+    2.10. dns.resolveNs(hostname, callback)         |node-api-dns.resolveNs()|
+    2.11. dns.resolveCname(hostname, callback)   |node-api-dns.resolveCname()|
+    2.12. dns.reverse(ip, callback)                   |node-api-dns.reverse()|
+    2.13. dns.getServers()                         |node-api-dns.getServers()|
+    2.14. dns.setServers(servers)                  |node-api-dns.setServers()|
+  3. Properties                                      |node-api-dns-properties|
+
+==============================================================================
+INTRO                                                           *node-api-dns*
+
+Stability: 2 - Stable
+
+Use `require('dns')` to access this module.
+
+This module contains functions that belong to two different categories:
+
+1) Functions that use the underlying operating system facilities to perform
+name resolution, and that do not necessarily do any network communication.
+This category contains only one function: `dns.lookup`. **Developers looking
+to perform name resolution in the same way that other applications on the same
+operating system behave should use `dns.lookup`.**
+
+Here is an example that does a lookup of `www.google.com`.
+
+ >
+  var dns = require('dns');
+  
+  dns.lookup('www.google.com', function onLookup(err, addresses, family) {
+    console.log('addresses:', addresses);
+  });
+<
+
+2) Functions that connect to an actual DNS server to perform name resolution,
+and that __always__ use the network to perform DNS queries. This category
+contains all functions in the `dns` module but `dns.lookup`. These functions
+do not use the same set of configuration files than what `dns.lookup` uses.
+For instance, __they do not use the configuration from `/etc/hosts`__. These
+functions should be used by developers who do not want to use the underlying
+operating system's facilities for name resolution, and instead want to
+__always__ perform DNS queries.
+
+Here is an example which resolves `'www.google.com'` then reverse
+resolves the IP addresses which are returned.
+
+ >
+  var dns = require('dns');
+  
+  dns.resolve4('www.google.com', function (err, addresses) {
+    if (err) throw err;
+  
+    console.log('addresses: ' + JSON.stringify(addresses));
+  
+    addresses.forEach(function (a) {
+      dns.reverse(a, function (err, hostnames) {
+        if (err) {
+          throw err;
+        }
+  
+        console.log('reverse for ' + a + ': ' + JSON.stringify(hostnames));
+      });
+    });
+  });
+<
+
+There are subtle consequences in choosing one or another, please consult the
+*node-api-dns_implementation_considerations*
+for more information.
+
+==============================================================================
+METHODS                                                 *node-api-dns-methods*
+
+------------------------------------------------------------------------------
+dns.lookup(hostname[, options], callback)              *node-api-dns.lookup()*
+
+Resolves a hostname (e.g. `'google.com'`) into the first found A (IPv4) or
+AAAA (IPv6) record. `options` can be an object or integer. If `options` is
+not provided, then IP v4 and v6 addresses are both valid. If `options` is
+an integer, then it must be `4` or `6`.
+
+Alternatively, `options` can be an object containing these properties:
+
+* `family` {Number} - The record family. If present, must be the integer
+  `4` or `6`. If not provided, both IP v4 and v6 addresses are accepted.
+* `hints`: {Number} - If present, it should be one or more of the supported
+  `getaddrinfo` flags. If `hints` is not provided, then no flags are passed to
+  `getaddrinfo`. Multiple flags can be passed through `hints` by logically
+  `OR`ing their values.
+  See *node-api-dns_supported_getaddrinfo_flags* below
+  for more information on supported flags.
+* `all`: {Boolean} - When `true`, the callback returns all resolved addresses
+  in an array, otherwise returns a single address. Defaults to `false`.
+
+All properties are optional. An example usage of options is shown below.
+
+ >
+  {
+    family: 4,
+    hints: dns.ADDRCONFIG | dns.V4MAPPED,
+    all: false
+  }
+<
+
+The callback has arguments `(err, address, family)`. `address` is a string
+representation of an IP v4 or v6 address. `family` is either the integer 4 or 6
+and denotes the family of `address` (not necessarily the value initially passed
+to `lookup`).
+
+With the `all` option set, the arguments change to `(err, addresses)`, with
+`addresses` being an array of objects with the properties `address` and
+`family`.
+
+On error, `err` is an `Error` object, where `err.code` is the error code.
+Keep in mind that `err.code` will be set to `'ENOENT'` not only when
+the hostname does not exist but also when the lookup fails in other ways
+such as no available file descriptors.
+
+`dns.lookup` doesn't necessarily have anything to do with the DNS protocol.
+It's only an operating system facility that can associate name with addresses,
+and vice versa.
+
+Its implementation can have subtle but important consequences on the behavior
+of any io.js program. Please take some time to consult the *node-api-dns_implementation_considerations* before using it.
+
+    
+------------------------------------------------------------------------------
+dns.lookupService(address, port, callback)      *node-api-dns.lookupService()*
+
+Resolves the given address and port into a hostname and service using
+`getnameinfo`.
+
+The callback has arguments `(err, hostname, service)`. The `hostname` and
+`service` arguments are strings (e.g. `'localhost'` and `'http'` respectively).
+
+On error, `err` is an `Error` object, where `err.code` is the error code.
+
+    
+------------------------------------------------------------------------------
+dns.resolve(hostname[, rrtype], callback)             *node-api-dns.resolve()*
+
+Resolves a hostname (e.g. `'google.com'`) into an array of the record types
+specified by rrtype.
+
+Valid rrtypes are:
+
+* `'A'` (IPV4 addresses, default)
+* `'AAAA'` (IPV6 addresses)
+* `'MX'` (mail exchange records)
+* `'TXT'` (text records)
+* `'SRV'` (SRV records)
+* `'PTR'` (used for reverse IP lookups)
+* `'NS'` (name server records)
+* `'CNAME'` (canonical name records)
+* `'SOA'` (start of authority record)
+
+The callback has arguments `(err, addresses)`.  The type of each item
+in `addresses` is determined by the record type, and described in the
+documentation for the corresponding lookup methods below.
+
+On error, `err` is an `Error` object, where `err.code` is
+one of the error codes listed below.
+
+    
+------------------------------------------------------------------------------
+dns.resolve4(hostname, callback)                     *node-api-dns.resolve4()*
+
+The same as `dns.resolve()`, but only for IPv4 queries (`A` records).
+`addresses` is an array of IPv4 addresses (e.g.
+`['74.125.79.104', '74.125.79.105', '74.125.79.106']`).
+
+    
+------------------------------------------------------------------------------
+dns.resolve6(hostname, callback)                     *node-api-dns.resolve6()*
+
+The same as `dns.resolve4()` except for IPv6 queries (an `AAAA` query).
+
+    
+------------------------------------------------------------------------------
+dns.resolveMx(hostname, callback)                   *node-api-dns.resolveMx()*
+
+The same as `dns.resolve()`, but only for mail exchange queries (`MX` records).
+
+`addresses` is an array of MX records, each with a priority and an exchange
+attribute (e.g. `[{'priority': 10, 'exchange': 'mx.example.com'},...]`).
+
+    
+------------------------------------------------------------------------------
+dns.resolveTxt(hostname, callback)                 *node-api-dns.resolveTxt()*
+
+The same as `dns.resolve()`, but only for text queries (`TXT` records).
+`addresses` is a 2-d array of the text records available for `hostname` (e.g.,
+`[ ['v=spf1 ip4:0.0.0.0 ', '~all' ] ]`). Each sub-array contains TXT chunks of
+one record. Depending on the use case, the could be either joined together or
+treated separately.
+
+    
+------------------------------------------------------------------------------
+dns.resolveSrv(hostname, callback)                 *node-api-dns.resolveSrv()*
+
+The same as `dns.resolve()`, but only for service records (`SRV` records).
+`addresses` is an array of the SRV records available for `hostname`. Properties
+of SRV records are priority, weight, port, and name (e.g.,
+`[{'priority': 10, 'weight': 5, 'port': 21223, 'name': 'service.example.com'}, ...]`).
+
+    
+------------------------------------------------------------------------------
+dns.resolveSoa(hostname, callback)                 *node-api-dns.resolveSoa()*
+
+The same as `dns.resolve()`, but only for start of authority record queries
+(`SOA` record).
+
+`addresses` is an object with the following structure:
+
+ >
+  {
+    nsname: 'ns.example.com',
+    hostmaster: 'root.example.com',
+    serial: 2013101809,
+    refresh: 10000,
+    retry: 2400,
+    expire: 604800,
+    minttl: 3600
+  }
+<
+
+    
+------------------------------------------------------------------------------
+dns.resolveNs(hostname, callback)                   *node-api-dns.resolveNs()*
+
+The same as `dns.resolve()`, but only for name server records (`NS` records).
+`addresses` is an array of the name server records available for `hostname`
+(e.g., `['ns1.example.com', 'ns2.example.com']`).
+
+    
+------------------------------------------------------------------------------
+dns.resolveCname(hostname, callback)             *node-api-dns.resolveCname()*
+
+The same as `dns.resolve()`, but only for canonical name records (`CNAME`
+records). `addresses` is an array of the canonical name records available for
+`hostname` (e.g., `['bar.example.com']`).
+
+    
+------------------------------------------------------------------------------
+dns.reverse(ip, callback)                             *node-api-dns.reverse()*
+
+Reverse resolves an ip address to an array of hostnames.
+
+The callback has arguments `(err, hostnames)`.
+
+On error, `err` is an `Error` object, where `err.code` is
+one of the error codes listed below.
+
+    
+------------------------------------------------------------------------------
+dns.getServers()                                   *node-api-dns.getServers()*
+
+Returns an array of IP addresses as strings that are currently being used for
+resolution
+
+    
+------------------------------------------------------------------------------
+dns.setServers(servers)                            *node-api-dns.setServers()*
+
+Given an array of IP addresses as strings, set them as the servers to use for
+resolving
+
+If you specify a port with the address it will be stripped, as the underlying
+library doesn't support that.
+
+This will throw if you pass invalid input.
+
+    
+
+==============================================================================
+PROPERTIES                                           *node-api-dns-properties*
+
+ vim:tw=78:ts=8:ft=help

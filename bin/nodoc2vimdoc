@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const commander = require('commander');
+const co = require('co');
+const nodoc2vimdoc = require('../index');
+
+commander
+  .version(require('../package').version)
+  .usage('[options]')
+  .option('-n, --node-version <nodeVersion>', 'specify node version, like 3.2.0.')
+  .option('-d, --download', 'download api docs from remote server.')
+  .option('-c, --convert', 'conver api docs.')
+  .parse(process.argv);
+
+let nodeVersion = 'latest';
+if (commander.nodeVersion) {
+  nodeVersion = commander.nodeVersion;
+  if (!nodeVersion.startsWith('v')) {
+    nodeVersion = 'v' + nodeVersion;
+  }
+}
+const node_api_dir = 'node-api-doc';
+const vim_doc_dir = 'vim-doc';
+
+co(function* () {
+  if (commander.download) {
+    yield nodoc2vimdoc.download({
+      nodeVersion: nodeVersion,
+      dest: node_api_dir,
+    });
+  }
+
+  if (commander.convert) {
+    yield nodoc2vimdoc.convert({
+      nodeVersion: nodeVersion,
+      src: node_api_dir,
+      dest: vim_doc_dir,
+    });
+  }
+}).then(function() {
+    console.log('Finished.');
+  }, function(err) {
+    console.error('Found error: ' + err.message + '\n\n' + err.stack);
+  });

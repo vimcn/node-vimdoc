@@ -1,0 +1,162 @@
+*node-api-assert.txt*      For Node.js module `Assert` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                                   *node-api-contents*
+
+  1. Intro                                                   |node-api-assert|
+  2. Methods                                         |node-api-assert-methods|
+    2.1. assert.fail(actual, expected, message, operator)  |node-api-assert.fail()|
+    2.2. assert(value[, message]), assert.ok(value[, message])  |node-api-assert.ok()|
+    2.3. assert.equal(actual, expected[, message])   |node-api-assert.equal()|
+    2.4. assert.notEqual(actual, expected[, message])  |node-api-assert.notEqual()|
+    2.5. assert.deepEqual(actual, expected[, message])  |node-api-assert.deepEqual()|
+    2.6. assert.notDeepEqual(actual, expected[, message])  |node-api-assert.notDeepEqual()|
+    2.7. assert.strictEqual(actual, expected[, message])  |node-api-assert.strictEqual()|
+    2.8. assert.notStrictEqual(actual, expected[, message])  |node-api-assert.notStrictEqual()|
+    2.9. assert.deepStrictEqual(actual, expected[, message])  |node-api-assert.deepStrictEqual()|
+    2.10. assert.notDeepStrictEqual(actual, expected[, message])  |node-api-assert.notDeepStrictEqual()|
+    2.11. assert.throws(block[, error][, message])  |node-api-assert.throws()|
+    2.12. assert.doesNotThrow(block[, message])  |node-api-assert.doesNotThrow()|
+    2.13. assert.ifError(value)                    |node-api-assert.ifError()|
+  3. Properties                                   |node-api-assert-properties|
+
+==============================================================================
+INTRO                                                        *node-api-assert*
+
+Stability: 2 - Stable
+
+This module is used for writing unit tests for your applications, you can
+access it with `require('assert')`.
+
+==============================================================================
+METHODS                                              *node-api-assert-methods*
+
+------------------------------------------------------------------------------
+assert.fail(actual, expected, message, operator)      *node-api-assert.fail()*
+
+Throws an exception that displays the values for `actual` and `expected` separated by the provided operator.
+
+    
+------------------------------------------------------------------------------
+assert(value[, message]), assert.ok(value[, message])   *node-api-assert.ok()*
+
+Tests if value is truthy, it is equivalent to `assert.equal(true, !!value, message);`
+
+    
+------------------------------------------------------------------------------
+assert.equal(actual, expected[, message])            *node-api-assert.equal()*
+
+Tests shallow, coercive equality with the equal comparison operator ( `==` ).
+
+    
+------------------------------------------------------------------------------
+assert.notEqual(actual, expected[, message])      *node-api-assert.notEqual()*
+
+Tests shallow, coercive non-equality with the not equal comparison operator ( `!=` ).
+
+    
+------------------------------------------------------------------------------
+assert.deepEqual(actual, expected[, message])    *node-api-assert.deepEqual()*
+
+Tests for deep equality. Primitive values are compared with the equal comparison
+operator ( `==` ). Doesn't take object prototypes into account.
+
+    
+------------------------------------------------------------------------------
+assert.notDeepEqual(actual, expected[, message])  *node-api-assert.notDeepEqual()*
+
+Tests for any deep inequality. Opposite of `assert.deepEqual`.
+
+    
+------------------------------------------------------------------------------
+assert.strictEqual(actual, expected[, message])  *node-api-assert.strictEqual()*
+
+Tests strict equality, as determined by the strict equality operator ( `===` )
+
+    
+------------------------------------------------------------------------------
+assert.notStrictEqual(actual, expected[, message])  *node-api-assert.notStrictEqual()*
+
+Tests strict non-equality, as determined by the strict not equal
+operator ( `!==` )
+
+    
+------------------------------------------------------------------------------
+assert.deepStrictEqual(actual, expected[, message])  *node-api-assert.deepStrictEqual()*
+
+Tests for deep equality. Primitive values are compared with the strict equality
+operator ( `===` ).
+
+    
+------------------------------------------------------------------------------
+assert.notDeepStrictEqual(actual, expected[, message])  *node-api-assert.notDeepStrictEqual()*
+
+Tests for deep inequality. Opposite of `assert.deepStrictEqual`.
+
+    
+------------------------------------------------------------------------------
+assert.throws(block[, error][, message])            *node-api-assert.throws()*
+
+Expects `block` to throw an error. `error` can be constructor, `RegExp` or
+validation function.
+
+Validate instanceof using constructor:
+
+ >
+  assert.throws(
+    function() {
+      throw new Error("Wrong value");
+    },
+    Error
+  );
+<
+
+Validate error message using RegExp:
+
+ >
+  assert.throws(
+    function() {
+      throw new Error("Wrong value");
+    },
+    /value/
+  );
+<
+
+Custom error validation:
+
+ >
+  assert.throws(
+    function() {
+      throw new Error("Wrong value");
+    },
+    function(err) {
+      if ( (err instanceof Error) &amp;&amp; /value/.test(err) ) {
+        return true;
+      }
+    },
+    "unexpected error"
+  );
+<
+
+    
+------------------------------------------------------------------------------
+assert.doesNotThrow(block[, message])         *node-api-assert.doesNotThrow()*
+
+Expects `block` not to throw an error, see `assert.throws` for details.
+
+    
+------------------------------------------------------------------------------
+assert.ifError(value)                              *node-api-assert.ifError()*
+
+Tests if value is not a false value, throws if it is a true value. Useful when
+testing the first argument, `error` in callbacks.
+
+    
+
+==============================================================================
+PROPERTIES                                        *node-api-assert-properties*
+
+ vim:tw=78:ts=8:ft=help

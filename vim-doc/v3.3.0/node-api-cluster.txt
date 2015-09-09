@@ -1,0 +1,232 @@
+*node-api-cluster.txt*      For Node.js module `Cluster` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                                   *node-api-contents*
+
+  1. Intro                                                  |node-api-cluster|
+  2. Methods                                        |node-api-cluster-methods|
+    2.1. cluster.setupMaster([settings])      |node-api-cluster.setupMaster()|
+    2.2. cluster.fork([env])                         |node-api-cluster.fork()|
+    2.3. cluster.disconnect([callback])        |node-api-cluster.disconnect()|
+  3. Properties                                  |node-api-cluster-properties|
+    3.1. cluster.schedulingPolicy          |node-api-cluster.schedulingPolicy|
+    3.2. `settings` {Object}                       |node-api-cluster.settings|
+    3.3. `isMaster` {Boolean}                      |node-api-cluster.isMaster|
+    3.4. `isWorker` {Boolean}                      |node-api-cluster.isWorker|
+    3.5. `worker` {Object}                           |node-api-cluster.worker|
+    3.6. `workers` {Object}                         |node-api-cluster.workers|
+
+==============================================================================
+INTRO                                                       *node-api-cluster*
+
+Stability: 2 - Stable
+
+A single instance of io.js runs in a single thread. To take advantage of
+multi-core systems the user will sometimes want to launch a cluster of io.js
+processes to handle the load.
+
+The cluster module allows you to easily create child processes that
+all share server ports.
+
+ >
+  var cluster = require('cluster');
+  var http = require('http');
+  var numCPUs = require('os').cpus().length;
+  
+  if (cluster.isMaster) {
+    // Fork workers.
+    for (var i = 0; i &lt; numCPUs; i++) {
+      cluster.fork();
+    }
+  
+    cluster.on('exit', function(worker, code, signal) {
+      console.log('worker ' + worker.process.pid + ' died');
+    });
+  } else {
+    // Workers can share any TCP connection
+    // In this case it is an HTTP server
+    http.createServer(function(req, res) {
+      res.writeHead(200);
+      res.end("hello world\n");
+    }).listen(8000);
+  }
+<
+
+Running io.js will now share port 8000 between the workers:
+
+ >
+  % NODE_DEBUG=cluster iojs server.js
+  23521,Master Worker 23524 online
+  23521,Master Worker 23526 online
+  23521,Master Worker 23523 online
+  23521,Master Worker 23528 online
+<
+
+This feature was introduced recently, and may change in future versions.
+Please try it out and provide feedback.
+
+Also note that, on Windows, it is not yet possible to set up a named pipe
+server in a worker.
+
+==============================================================================
+METHODS                                             *node-api-cluster-methods*
+
+------------------------------------------------------------------------------
+cluster.setupMaster([settings])               *node-api-cluster.setupMaster()*
+
+`setupMaster` is used to change the default 'fork' behavior. Once called,
+the settings will be present in `cluster.settings`.
+
+Note that:
+
+* any settings changes only affect future calls to `.fork()` and have no
+  effect on workers that are already running
+* The __only__ attribute of a worker that cannot be set via `.setupMaster()` is
+  the `env` passed to `.fork()`
+* the defaults above apply to the first call only, the defaults for later
+  calls is the current value at the time of `cluster.setupMaster()` is called
+
+Example:
+
+ >
+  var cluster = require('cluster');
+  cluster.setupMaster({
+    exec: 'worker.js',
+    args: ['--use', 'https'],
+    silent: true
+  });
+  cluster.fork(); // https worker
+  cluster.setupMaster({
+    args: ['--use', 'http']
+  });
+  cluster.fork(); // http worker
+<
+
+This can only be called from the master process.
+
+    
+------------------------------------------------------------------------------
+cluster.fork([env])                                  *node-api-cluster.fork()*
+
+Spawn a new worker process.
+
+This can only be called from the master process.
+
+    
+------------------------------------------------------------------------------
+cluster.disconnect([callback])                 *node-api-cluster.disconnect()*
+
+Calls `.disconnect()` on each worker in `cluster.workers`.
+
+When they are disconnected all internal handles will be closed, allowing the
+master process to die gracefully if no other event is waiting.
+
+The method takes an optional callback argument which will be called when finished.
+
+This can only be called from the master process.
+
+    
+
+==============================================================================
+PROPERTIES                                       *node-api-cluster-properties*
+
+------------------------------------------------------------------------------
+cluster.schedulingPolicy                   *node-api-cluster.schedulingPolicy*
+
+The scheduling policy, either `cluster.SCHED_RR` for round-robin or
+`cluster.SCHED_NONE` to leave it to the operating system. This is a
+global setting and effectively frozen once you spawn the first worker
+or call `cluster.setupMaster()`, whatever comes first.
+
+`SCHED_RR` is the default on all operating systems except Windows.
+Windows will change to `SCHED_RR` once libuv is able to effectively
+distribute IOCP handles without incurring a large performance hit.
+
+`cluster.schedulingPolicy` can also be set through the
+`NODE_CLUSTER_SCHED_POLICY` environment variable. Valid
+values are `"rr"` and `"none"`.
+
+      
+------------------------------------------------------------------------------
+`settings` {Object}                                *node-api-cluster.settings*
+
+After calling `.setupMaster()` (or `.fork()`) this settings object will contain
+the settings, including the default values.
+
+It is effectively frozen after being set, because `.setupMaster()` can
+only be called once.
+
+This object is not supposed to be changed or set manually, by you.
+
+      
+------------------------------------------------------------------------------
+`isMaster` {Boolean}                               *node-api-cluster.isMaster*
+
+True if the process is a master. This is determined
+by the `process.env.NODE_UNIQUE_ID`. If `process.env.NODE_UNIQUE_ID` is
+undefined, then `isMaster` is `true`.
+
+      
+------------------------------------------------------------------------------
+`isWorker` {Boolean}                               *node-api-cluster.isWorker*
+
+True if the process is not a master (it is the negation of `cluster.isMaster`).
+
+      
+------------------------------------------------------------------------------
+`worker` {Object}                                    *node-api-cluster.worker*
+
+A reference to the current worker object. Not available in the master process.
+
+ >
+  var cluster = require('cluster');
+  
+  if (cluster.isMaster) {
+    console.log('I am master');
+    cluster.fork();
+    cluster.fork();
+  } else if (cluster.isWorker) {
+    console.log('I am worker #' + cluster.worker.id);
+  }
+<
+
+      
+------------------------------------------------------------------------------
+`workers` {Object}                                  *node-api-cluster.workers*
+
+A hash that stores the active worker objects, keyed by `id` field. Makes it
+easy to loop through all the workers. It is only available in the master
+process.
+
+A worker is removed from cluster.workers after the worker has disconnected __and__
+exited. The order between these two events cannot be determined in advance.
+However, it is guaranteed that the removal from the cluster.workers list happens
+before last `'disconnect'` or `'exit'` event is emitted.
+
+ >
+  // Go through all workers
+  function eachWorker(callback) {
+    for (var id in cluster.workers) {
+      callback(cluster.workers[id]);
+    }
+  }
+  eachWorker(function(worker) {
+    worker.send('big announcement to all workers');
+  });
+<
+
+Should you wish to reference a worker over a communication channel, using
+the worker's unique id is the easiest way to find the worker.
+
+ >
+  socket.on('data', function(id) {
+    var worker = cluster.workers[id];
+  });
+<
+
+      
+
+ vim:tw=78:ts=8:ft=help
