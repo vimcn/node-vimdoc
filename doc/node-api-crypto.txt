@@ -1,0 +1,455 @@
+*node-api-crypto.txt*      For Node.js module `Crypto` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                                   *node-api-contents*
+
+  1. Intro                                                   |node-api-crypto|
+  2. Methods                                         |node-api-crypto-methods|
+    2.1. crypto.setEngine(engine[, flags])       |node-api-crypto.setEngine()|
+    2.2. crypto.getCiphers()                    |node-api-crypto.getCiphers()|
+    2.3. crypto.getHashes()                      |node-api-crypto.getHashes()|
+    2.4. crypto.getCurves()                      |node-api-crypto.getCurves()|
+    2.5. crypto.createCredentials(details)  |node-api-crypto.createCredentials()|
+    2.6. crypto.createHash(algorithm)           |node-api-crypto.createHash()|
+    2.7. crypto.createHmac(algorithm, key)      |node-api-crypto.createHmac()|
+    2.8. crypto.createCipher(algorithm, password)  |node-api-crypto.createCipher()|
+    2.9. crypto.createCipheriv(algorithm, key, iv)  |node-api-crypto.createCipheriv()|
+    2.10. crypto.createDecipher(algorithm, password)  |node-api-crypto.createDecipher()|
+    2.11. crypto.createDecipheriv(algorithm, key, iv)  |node-api-crypto.createDecipheriv()|
+    2.12. crypto.createSign(algorithm)          |node-api-crypto.createSign()|
+    2.13. crypto.createVerify(algorithm)      |node-api-crypto.createVerify()|
+    2.14. crypto.createDiffieHellman(prime_length[, generator])  |node-api-crypto.createDiffieHellman()|
+    2.15. crypto.createDiffieHellman(prime[, prime_encoding][, generator][, generator_encoding])  |node-api-crypto.createDiffieHellman()|
+    2.16. crypto.getDiffieHellman(group_name)  |node-api-crypto.getDiffieHellman()|
+    2.17. crypto.createECDH(curve_name)         |node-api-crypto.createECDH()|
+    2.18. crypto.pbkdf2(password, salt, iterations, keylen[, digest], callback)  |node-api-crypto.pbkdf2()|
+    2.19. crypto.pbkdf2Sync(password, salt, iterations, keylen[, digest])  |node-api-crypto.pbkdf2Sync()|
+    2.20. crypto.randomBytes(size[, callback])  |node-api-crypto.randomBytes()|
+    2.21. crypto.publicEncrypt(public_key, buffer)  |node-api-crypto.publicEncrypt()|
+    2.22. crypto.publicDecrypt(public_key, buffer)  |node-api-crypto.publicDecrypt()|
+    2.23. crypto.privateDecrypt(private_key, buffer)  |node-api-crypto.privateDecrypt()|
+    2.24. crypto.privateEncrypt(private_key, buffer)  |node-api-crypto.privateEncrypt()|
+  3. Properties                                   |node-api-crypto-properties|
+    3.1. crypto.DEFAULT_ENCODING            |node-api-crypto.DEFAULT_ENCODING|
+
+==============================================================================
+INTRO                                                        *node-api-crypto*
+
+Stability: 2 - Stable
+
+Use `require('crypto')` to access this module.
+
+The crypto module offers a way of encapsulating secure credentials to be
+used as part of a secure HTTPS net or http connection.
+
+It also offers a set of wrappers for OpenSSL's hash, hmac, cipher,
+decipher, sign and verify methods.
+
+==============================================================================
+METHODS                                              *node-api-crypto-methods*
+
+------------------------------------------------------------------------------
+crypto.setEngine(engine[, flags])                *node-api-crypto.setEngine()*
+
+Load and set engine for some/all OpenSSL functions (selected by flags).
+
+`engine` could be either an id or a path to the engine's shared library.
+
+`flags` is optional and has `ENGINE_METHOD_ALL` value by default. It could take
+one of or mix of following flags (defined in `constants` module):
+
+* `ENGINE_METHOD_RSA`
+* `ENGINE_METHOD_DSA`
+* `ENGINE_METHOD_DH`
+* `ENGINE_METHOD_RAND`
+* `ENGINE_METHOD_ECDH`
+* `ENGINE_METHOD_ECDSA`
+* `ENGINE_METHOD_CIPHERS`
+* `ENGINE_METHOD_DIGESTS`
+* `ENGINE_METHOD_STORE`
+* `ENGINE_METHOD_PKEY_METH`
+* `ENGINE_METHOD_PKEY_ASN1_METH`
+* `ENGINE_METHOD_ALL`
+* `ENGINE_METHOD_NONE`
+
+    
+------------------------------------------------------------------------------
+crypto.getCiphers()                             *node-api-crypto.getCiphers()*
+
+Returns an array with the names of the supported ciphers.
+
+Example:
+
+ >
+  var ciphers = crypto.getCiphers();
+  console.log(ciphers); // ['aes-128-cbc', 'aes-128-ccm', ...]
+<
+
+    
+------------------------------------------------------------------------------
+crypto.getHashes()                               *node-api-crypto.getHashes()*
+
+Returns an array with the names of the supported hash algorithms.
+
+Example:
+
+ >
+  var hashes = crypto.getHashes();
+  console.log(hashes); // ['sha', 'sha1', 'sha1WithRSAEncryption', ...]
+<
+
+    
+------------------------------------------------------------------------------
+crypto.getCurves()                               *node-api-crypto.getCurves()*
+
+Returns an array with the names of the supported elliptic curves.
+
+Example:
+
+ >
+  var curves = crypto.getCurves();
+  console.log(curves); // ['secp256k1', 'secp384r1', ...]
+<
+
+    
+------------------------------------------------------------------------------
+crypto.createCredentials(details)        *node-api-crypto.createCredentials()*
+
+Creates a credentials object, with the optional details being a
+dictionary with keys:
+
+* `pfx` : A string or buffer holding the PFX or PKCS12 encoded private
+  key, certificate and CA certificates
+* `key` : A string holding the PEM encoded private key
+* `passphrase` : A string of passphrase for the private key or pfx
+* `cert` : A string holding the PEM encoded certificate
+* `ca` : Either a string or list of strings of PEM encoded CA
+  certificates to trust.
+* `crl` : Either a string or list of strings of PEM encoded CRLs
+  (Certificate Revocation List)
+* `ciphers`: A string describing the ciphers to use or exclude.
+  Consult
+  http://www.openssl.org/docs/apps/ciphers.html#CIPHER_LIST_FORMAT
+  for details on the format.
+
+If no 'ca' details are given, then io.js will use the default
+publicly trusted list of CAs as given in
+
+http://mxr.mozilla.org/mozilla/source/security/nss/lib/ckfw/builtins/certdata.txt.
+
+    
+------------------------------------------------------------------------------
+crypto.createHash(algorithm)                    *node-api-crypto.createHash()*
+
+Creates and returns a hash object, a cryptographic hash with the given
+algorithm which can be used to generate hash digests.
+
+`algorithm` is dependent on the available algorithms supported by the
+version of OpenSSL on the platform. Examples are `'sha1'`, `'md5'`,
+`'sha256'`, `'sha512'`, etc.  On recent releases, `openssl
+list-message-digest-algorithms` will display the available digest
+algorithms.
+
+Example: this program that takes the sha1 sum of a file
+
+ >
+  var filename = process.argv[2];
+  var crypto = require('crypto');
+  var fs = require('fs');
+  
+  var shasum = crypto.createHash('sha1');
+  
+  var s = fs.ReadStream(filename);
+  s.on('data', function(d) {
+    shasum.update(d);
+  });
+  
+  s.on('end', function() {
+    var d = shasum.digest('hex');
+    console.log(d + '  ' + filename);
+  });
+<
+
+    
+------------------------------------------------------------------------------
+crypto.createHmac(algorithm, key)               *node-api-crypto.createHmac()*
+
+Creates and returns a hmac object, a cryptographic hmac with the given
+algorithm and key.
+
+It is a *node-api-stream* that is both readable and writable.  The
+written data is used to compute the hmac.  Once the writable side of
+the stream is ended, use the `read()` method to get the computed
+digest.  The legacy `update` and `digest` methods are also supported.
+
+`algorithm` is dependent on the available algorithms supported by
+OpenSSL - see createHash above.  `key` is the hmac key to be used.
+
+    
+------------------------------------------------------------------------------
+crypto.createCipher(algorithm, password)      *node-api-crypto.createCipher()*
+
+Creates and returns a cipher object, with the given algorithm and
+password.
+
+`algorithm` is dependent on OpenSSL, examples are `'aes192'`, etc.  On
+recent releases, `openssl list-cipher-algorithms` will display the
+available cipher algorithms.  `password` is used to derive key and IV,
+which must be a `'binary'` encoded string or a *node-api-buffer*.
+
+It is a *node-api-stream* that is both readable and writable.  The
+written data is used to compute the hash.  Once the writable side of
+the stream is ended, use the `read()` method to get the enciphered
+contents.  The legacy `update` and `final` methods are also supported.
+
+Note: `createCipher` derives keys with the OpenSSL function [EVP_BytesToKey][]
+with the digest algorithm set to MD5, one iteration, and no salt. The lack of
+salt allows dictionary attacks as the same password always creates the same key.
+The low iteration count and non-cryptographically secure hash algorithm allow
+passwords to be tested very rapidly.
+
+In line with OpenSSL's recommendation to use pbkdf2 instead of EVP_BytesToKey it
+is recommended you derive a key and iv yourself with [crypto.pbkdf2][] and to
+then use [createCipheriv()][] to create the cipher stream.
+
+    
+------------------------------------------------------------------------------
+crypto.createCipheriv(algorithm, key, iv)   *node-api-crypto.createCipheriv()*
+
+Creates and returns a cipher object, with the given algorithm, key and
+iv.
+
+`algorithm` is the same as the argument to `createCipher()`.  `key` is
+the raw key used by the algorithm.  `iv` is an *node-api-http://en.wikipedia.org/wiki/Initialization_vector*.
+
+`key` and `iv` must be `'binary'` encoded strings or
+*node-api-buffer*.
+
+    
+------------------------------------------------------------------------------
+crypto.createDecipher(algorithm, password)  *node-api-crypto.createDecipher()*
+
+Creates and returns a decipher object, with the given algorithm and
+key.  This is the mirror of the [createCipher()][] above.
+
+    
+------------------------------------------------------------------------------
+crypto.createDecipheriv(algorithm, key, iv)  *node-api-crypto.createDecipheriv()*
+
+Creates and returns a decipher object, with the given algorithm, key
+and iv.  This is the mirror of the [createCipheriv()][] above.
+
+    
+------------------------------------------------------------------------------
+crypto.createSign(algorithm)                    *node-api-crypto.createSign()*
+
+Creates and returns a signing object, with the given algorithm.  On
+recent OpenSSL releases, `openssl list-public-key-algorithms` will
+display the available signing algorithms. Examples are `'RSA-SHA256'`.
+
+    
+------------------------------------------------------------------------------
+crypto.createVerify(algorithm)                *node-api-crypto.createVerify()*
+
+Creates and returns a verification object, with the given algorithm.
+This is the mirror of the signing object above.
+
+    
+------------------------------------------------------------------------------
+crypto.createDiffieHellman(prime_length[, generator])  *node-api-crypto.createDiffieHellman()*
+
+Creates a Diffie-Hellman key exchange object and generates a prime of
+`prime_length` bits and using an optional specific numeric `generator`.
+If no `generator` is specified, then `2` is used.
+
+    
+------------------------------------------------------------------------------
+crypto.createDiffieHellman(prime[, prime_encoding][, generator][, generator_encoding])  *node-api-crypto.createDiffieHellman()*
+
+Creates a Diffie-Hellman key exchange object using the supplied `prime` and an
+optional specific `generator`.
+`generator` can be a number, string, or Buffer.
+If no `generator` is specified, then `2` is used.
+`prime_encoding` and `generator_encoding` can be `'binary'`, `'hex'`, or `'base64'`.
+If no `prime_encoding` is specified, then a Buffer is expected for `prime`.
+If no `generator_encoding` is specified, then a Buffer is expected for `generator`.
+
+    
+------------------------------------------------------------------------------
+crypto.getDiffieHellman(group_name)       *node-api-crypto.getDiffieHellman()*
+
+Creates a predefined Diffie-Hellman key exchange object.  The
+supported groups are: `'modp1'`, `'modp2'`, `'modp5'` (defined in [RFC
+2412][]) and `'modp14'`, `'modp15'`, `'modp16'`, `'modp17'`,
+`'modp18'` (defined in [RFC 3526][]).  The returned object mimics the
+interface of objects created by [crypto.createDiffieHellman()][]
+above, but will not allow to change the keys (with
+[diffieHellman.setPublicKey()][] for example).  The advantage of using
+this routine is that the parties don't have to generate nor exchange
+group modulus beforehand, saving both processor and communication
+time.
+
+Example (obtaining a shared secret):
+
+ >
+  var crypto = require('crypto');
+  var alice = crypto.getDiffieHellman('modp5');
+  var bob = crypto.getDiffieHellman('modp5');
+  
+  alice.generateKeys();
+  bob.generateKeys();
+  
+  var alice_secret = alice.computeSecret(bob.getPublicKey(), null, 'hex');
+  var bob_secret = bob.computeSecret(alice.getPublicKey(), null, 'hex');
+  
+  /* alice_secret and bob_secret should be the same */
+  console.log(alice_secret == bob_secret);
+<
+
+    
+------------------------------------------------------------------------------
+crypto.createECDH(curve_name)                   *node-api-crypto.createECDH()*
+
+Creates an Elliptic Curve (EC) Diffie-Hellman key exchange object using a
+predefined curve specified by the `curve_name` string. Use [getCurves()][] to
+obtain a list of available curve names. On recent releases,
+`openssl ecparam -list_curves` will also display the name and description of
+each available elliptic curve.
+
+    
+------------------------------------------------------------------------------
+crypto.pbkdf2(password, salt, iterations, keylen[, digest], callback)  *node-api-crypto.pbkdf2()*
+
+Asynchronous PBKDF2 function.  Applies the selected HMAC digest function
+(default: SHA1) to derive a key of the requested length from the password,
+salt and number of iterations.  The callback gets two arguments:
+`(err, derivedKey)`.
+
+Example:
+
+ >
+  crypto.pbkdf2('secret', 'salt', 4096, 512, 'sha256', function(err, key) {
+    if (err)
+      throw err;
+    console.log(key.toString('hex'));  // 'c5e478d...1469e50'
+  });
+<
+
+You can get a list of supported digest functions with
+*node-api-crypto_crypto_gethashes*.
+
+    
+------------------------------------------------------------------------------
+crypto.pbkdf2Sync(password, salt, iterations, keylen[, digest])  *node-api-crypto.pbkdf2Sync()*
+
+Synchronous PBKDF2 function.  Returns derivedKey or throws error.
+
+    
+------------------------------------------------------------------------------
+crypto.randomBytes(size[, callback])           *node-api-crypto.randomBytes()*
+
+Generates cryptographically strong pseudo-random data. Usage:
+
+ >
+  // async
+  crypto.randomBytes(256, function(ex, buf) {
+    if (ex) throw ex;
+    console.log('Have %d bytes of random data: %s', buf.length, buf);
+  });
+  
+  // sync
+  try {
+    var buf = crypto.randomBytes(256);
+    console.log('Have %d bytes of random data: %s', buf.length, buf);
+  } catch (ex) {
+    // handle error
+    // most likely, entropy sources are drained
+  }
+<
+
+NOTE: This will block if there is insufficient entropy, although it should
+normally never take longer than a few milliseconds. The only time when this
+may conceivably block is right after boot, when the whole system is still
+low on entropy.
+
+    
+------------------------------------------------------------------------------
+crypto.publicEncrypt(public_key, buffer)     *node-api-crypto.publicEncrypt()*
+
+Encrypts `buffer` with `public_key`. Only RSA is currently supported.
+
+`public_key` can be an object or a string. If `public_key` is a string, it is
+treated as the key with no passphrase and will use `RSA_PKCS1_OAEP_PADDING`.
+Since RSA public keys may be derived from private keys you may pass a private
+key to this method.
+
+`public_key`:
+
+* `key` : A string holding the PEM encoded private key
+  
+  * `passphrase` : An optional string of passphrase for the private key
+    * `padding` : An optional padding value, one of the following:
+      * `constants.RSA_NO_PADDING`
+    * `constants.RSA_PKCS1_PADDING`
+    * `constants.RSA_PKCS1_OAEP_PADDING`
+
+NOTE: All paddings are defined in `constants` module.
+
+    
+------------------------------------------------------------------------------
+crypto.publicDecrypt(public_key, buffer)     *node-api-crypto.publicDecrypt()*
+
+See above for details. Has the same API as `crypto.publicEncrypt`. Default
+padding is `RSA_PKCS1_PADDING`.
+
+    
+------------------------------------------------------------------------------
+crypto.privateDecrypt(private_key, buffer)  *node-api-crypto.privateDecrypt()*
+
+Decrypts `buffer` with `private_key`.
+
+`private_key` can be an object or a string. If `private_key` is a string, it is
+treated as the key with no passphrase and will use `RSA_PKCS1_OAEP_PADDING`.
+
+`private_key`:
+
+* `key` : A string holding the PEM encoded private key
+  
+  * `passphrase` : An optional string of passphrase for the private key
+    * `padding` : An optional padding value, one of the following:
+      * `constants.RSA_NO_PADDING`
+    * `constants.RSA_PKCS1_PADDING`
+    * `constants.RSA_PKCS1_OAEP_PADDING`
+
+NOTE: All paddings are defined in `constants` module.
+
+    
+------------------------------------------------------------------------------
+crypto.privateEncrypt(private_key, buffer)  *node-api-crypto.privateEncrypt()*
+
+See above for details. Has the same API as `crypto.privateDecrypt`.
+Default padding is `RSA_PKCS1_PADDING`.
+
+    
+
+==============================================================================
+PROPERTIES                                        *node-api-crypto-properties*
+
+------------------------------------------------------------------------------
+crypto.DEFAULT_ENCODING                     *node-api-crypto.DEFAULT_ENCODING*
+
+The default encoding to use for functions that can take either strings
+or buffers.  The default value is `'buffer'`, which makes it default
+to using Buffer objects.  This is here to make the crypto module more
+easily compatible with legacy programs that expected `'binary'` to be
+the default encoding.
+
+Note that new programs will probably expect buffers, so only use this
+as a temporary measure.
+
+      
+
+ vim:tw=78:ts=8:ft=help
