@@ -1,0 +1,79 @@
+*node-api-dgram.txt*      For Node.js module `UDP / Datagram Sockets` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                             *node-api-dgram-contents*
+
+  1. Intro                                                    |node-api-dgram|
+  2. Methods                                          |node-api-dgram-methods|
+    2.1. dgram.createSocket(type[, callback])  |node-api-dgram.createSocket()|
+    2.2. dgram.createSocket(options[, callback])  |node-api-dgram.createSocket()|
+  3. Properties                                    |node-api-dgram-properties|
+
+==============================================================================
+INTRO                                                         *node-api-dgram*
+
+Stability: 2 - Stable
+
+Datagram sockets are available through `require('dgram')`.
+
+Important note: the behavior of `dgram.Socket#bind()` has changed in v0.10
+and is always asynchronous now.  If you have code that looks like this:
+
+ >
+  var s = dgram.createSocket('udp4');
+  s.bind(1234);
+  s.addMembership('224.0.0.114');
+<
+
+You have to change it to this:
+
+ >
+  var s = dgram.createSocket('udp4');
+  s.bind(1234, function() {
+    s.addMembership('224.0.0.114');
+  });
+<
+
+==============================================================================
+METHODS                                               *node-api-dgram-methods*
+
+------------------------------------------------------------------------------
+dgram.createSocket(type[, callback])           *node-api-dgram.createSocket()*
+
+Creates a datagram Socket of the specified types.  Valid types are `udp4`
+and `udp6`.
+
+Takes an optional callback which is added as a listener for `message` events.
+
+Call `socket.bind()` if you want to receive datagrams. `socket.bind()` will
+bind to the "all interfaces" address on a random port (it does the right thing
+for both `udp4` and `udp6` sockets). You can then retrieve the address and port
+with `socket.address().address` and `socket.address().port`.
+
+    
+------------------------------------------------------------------------------
+dgram.createSocket(options[, callback])        *node-api-dgram.createSocket()*
+
+The `options` object should contain a `type` field of either `udp4` or `udp6`
+and an optional boolean `reuseAddr` field.
+
+When `reuseAddr` is `true` `socket.bind()` will reuse the address, even if
+another process has already bound a socket on it. `reuseAddr` defaults to
+`false`.
+
+Takes an optional callback which is added as a listener for `message` events.
+
+Call `socket.bind()` if you want to receive datagrams. `socket.bind()` will
+bind to the "all interfaces" address on a random port (it does the right thing
+for both `udp4` and `udp6` sockets). You can then retrieve the address and port
+with `socket.address().address` and `socket.address().port`.
+
+    
+
+==============================================================================
+PROPERTIES                                         *node-api-dgram-properties*
+
+ vim:tw=78:ts=8:ft=help

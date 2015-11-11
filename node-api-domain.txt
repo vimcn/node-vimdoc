@@ -4,7 +4,7 @@ Node.js Documentation
 https://nodejs.org
 
 ==============================================================================
-CONTENTS                                            *node-api-domain-contents*
+CONTENTS                                                   *node-api-contents*
 
   1. Intro                                                   |node-api-domain|
   2. Methods                                         |node-api-domain-methods|

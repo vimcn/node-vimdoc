@@ -1,0 +1,70 @@
+*node-api-v8.txt*      For Node.js module `V8` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                                *node-api-v8-contents*
+
+  1. Intro                                                       |node-api-v8|
+  2. Methods                                             |node-api-v8-methods|
+    2.1. getHeapStatistics()                 |node-api-v8.getHeapStatistics()|
+    2.2. setFlagsFromString(string)         |node-api-v8.setFlagsFromString()|
+  3. Properties                                       |node-api-v8-properties|
+
+==============================================================================
+INTRO                                                            *node-api-v8*
+
+Stability: 2 - Stable
+
+This module exposes events and interfaces specific to the version of [V8][]
+built with io.js.  These interfaces are subject to change by upstream and are
+therefore not covered under the stability index.
+
+==============================================================================
+METHODS                                                  *node-api-v8-methods*
+
+------------------------------------------------------------------------------
+getHeapStatistics()                          *node-api-v8.getHeapStatistics()*
+
+Returns an object with the following properties
+
+ >
+  {
+    total_heap_size: 7326976,
+    total_heap_size_executable: 4194304,
+    total_physical_size: 7326976,
+    total_available_size: 1152656,
+    used_heap_size: 3476208,
+    heap_size_limit: 1535115264
+  }
+<
+
+    
+------------------------------------------------------------------------------
+setFlagsFromString(string)                  *node-api-v8.setFlagsFromString()*
+
+Set additional V8 command line flags.  Use with care; changing settings
+after the VM has started may result in unpredictable behavior, including
+crashes and data loss.  Or it may simply do nothing.
+
+The V8 options available for a version of io.js may be determined by running
+`iojs --v8-options`.  An unofficial, community-maintained list of options
+and their effects is available
+*node-api-https://github.com/thlorenz/v8-flags/blob/master/flags-0.11.md*.
+
+Usage:
+
+ >
+  // Print GC events to stdout for one minute.
+  var v8 = require('v8');
+  v8.setFlagsFromString('--trace_gc');
+  setTimeout(function() { v8.setFlagsFromString('--notrace_gc'); }, 60e3);
+<
+
+    
+
+==============================================================================
+PROPERTIES                                            *node-api-v8-properties*
+
+ vim:tw=78:ts=8:ft=help

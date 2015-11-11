@@ -1,0 +1,110 @@
+*node-api-timers.txt*      For Node.js module `Timers` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                            *node-api-timers-contents*
+
+  1. Intro                                                   |node-api-timers|
+  2. Methods                                         |node-api-timers-methods|
+    2.1. setTimeout(callback, delay[, arg][, ...])  |node-api-timers.setTimeout()|
+    2.2. clearTimeout(timeoutObject)          |node-api-timers.clearTimeout()|
+    2.3. setInterval(callback, delay[, arg][, ...])  |node-api-timers.setInterval()|
+    2.4. clearInterval(intervalObject)       |node-api-timers.clearInterval()|
+    2.5. unref()                                     |node-api-timers.unref()|
+    2.6. ref()                                         |node-api-timers.ref()|
+    2.7. setImmediate(callback[, arg][, ...])  |node-api-timers.setImmediate()|
+    2.8. clearImmediate(immediateObject)    |node-api-timers.clearImmediate()|
+  3. Properties                                   |node-api-timers-properties|
+
+==============================================================================
+INTRO                                                        *node-api-timers*
+
+Stability: 3 - Locked
+
+All of the timer functions are globals.  You do not need to `require()`
+this module in order to use them.
+
+==============================================================================
+METHODS                                              *node-api-timers-methods*
+
+------------------------------------------------------------------------------
+setTimeout(callback, delay[, arg][, ...])       *node-api-timers.setTimeout()*
+
+To schedule execution of a one-time `callback` after `delay` milliseconds. Returns a
+`timeoutObject` for possible use with `clearTimeout()`. Optionally you can
+also pass arguments to the callback.
+
+It is important to note that your callback will probably not be called in exactly
+`delay` milliseconds - io.js makes no guarantees about the exact timing of when
+the callback will fire, nor of the ordering things will fire in. The callback will
+be called as close as possible to the time specified.
+
+    
+------------------------------------------------------------------------------
+clearTimeout(timeoutObject)                   *node-api-timers.clearTimeout()*
+
+Prevents a timeout from triggering.
+
+    
+------------------------------------------------------------------------------
+setInterval(callback, delay[, arg][, ...])     *node-api-timers.setInterval()*
+
+To schedule the repeated execution of `callback` every `delay` milliseconds.
+Returns a `intervalObject` for possible use with `clearInterval()`. Optionally
+you can also pass arguments to the callback.
+
+    
+------------------------------------------------------------------------------
+clearInterval(intervalObject)                *node-api-timers.clearInterval()*
+
+Stops an interval from triggering.
+
+    
+------------------------------------------------------------------------------
+unref()                                              *node-api-timers.unref()*
+
+The opaque value returned by `setTimeout` and `setInterval` also has the method
+`timer.unref()` which will allow you to create a timer that is active but if
+it is the only item left in the event loop, it won't keep the program running.
+If the timer is already `unref`d calling `unref` again will have no effect.
+
+In the case of `setTimeout` when you `unref` you create a separate timer that
+will wakeup the event loop, creating too many of these may adversely effect
+event loop performance -- use wisely.
+
+    
+------------------------------------------------------------------------------
+ref()                                                  *node-api-timers.ref()*
+
+If you had previously `unref()`d a timer you can call `ref()` to explicitly
+request the timer hold the program open. If the timer is already `ref`d calling
+`ref` again will have no effect.
+
+    
+------------------------------------------------------------------------------
+setImmediate(callback[, arg][, ...])          *node-api-timers.setImmediate()*
+
+To schedule the "immediate" execution of `callback` after I/O events
+callbacks and before `setTimeout` and `setInterval` . Returns an
+`immediateObject` for possible use with `clearImmediate()`. Optionally you
+can also pass arguments to the callback.
+
+Callbacks for immediates are queued in the order in which they were created.
+The entire callback queue is processed every event loop iteration. If you queue
+an immediate from inside an executing callback, that immediate won't fire
+until the next event loop iteration.
+
+    
+------------------------------------------------------------------------------
+clearImmediate(immediateObject)             *node-api-timers.clearImmediate()*
+
+Stops an immediate from triggering.
+
+    
+
+==============================================================================
+PROPERTIES                                        *node-api-timers-properties*
+
+ vim:tw=78:ts=8:ft=help

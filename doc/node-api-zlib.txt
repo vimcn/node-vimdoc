@@ -1,0 +1,287 @@
+*node-api-zlib.txt*      For Node.js module `Zlib` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                              *node-api-zlib-contents*
+
+  1. Intro                                                     |node-api-zlib|
+  2. Methods                                           |node-api-zlib-methods|
+    2.1. zlib.createGzip([options])               |node-api-zlib.createGzip()|
+    2.2. zlib.createGunzip([options])           |node-api-zlib.createGunzip()|
+    2.3. zlib.createDeflate([options])         |node-api-zlib.createDeflate()|
+    2.4. zlib.createInflate([options])         |node-api-zlib.createInflate()|
+    2.5. zlib.createDeflateRaw([options])   |node-api-zlib.createDeflateRaw()|
+    2.6. zlib.createInflateRaw([options])   |node-api-zlib.createInflateRaw()|
+    2.7. zlib.createUnzip([options])             |node-api-zlib.createUnzip()|
+    2.8. zlib.deflate(buf[, options], callback)      |node-api-zlib.deflate()|
+    2.9. zlib.deflateSync(buf[, options])        |node-api-zlib.deflateSync()|
+    2.10. zlib.deflateRaw(buf[, options], callback)  |node-api-zlib.deflateRaw()|
+    2.11. zlib.deflateRawSync(buf[, options])  |node-api-zlib.deflateRawSync()|
+    2.12. zlib.gzip(buf[, options], callback)           |node-api-zlib.gzip()|
+    2.13. zlib.gzipSync(buf[, options])             |node-api-zlib.gzipSync()|
+    2.14. zlib.gunzip(buf[, options], callback)       |node-api-zlib.gunzip()|
+    2.15. zlib.gunzipSync(buf[, options])         |node-api-zlib.gunzipSync()|
+    2.16. zlib.inflate(buf[, options], callback)     |node-api-zlib.inflate()|
+    2.17. zlib.inflateSync(buf[, options])       |node-api-zlib.inflateSync()|
+    2.18. zlib.inflateRaw(buf[, options], callback)  |node-api-zlib.inflateRaw()|
+    2.19. zlib.inflateRawSync(buf[, options])  |node-api-zlib.inflateRawSync()|
+    2.20. zlib.unzip(buf[, options], callback)         |node-api-zlib.unzip()|
+    2.21. zlib.unzipSync(buf[, options])           |node-api-zlib.unzipSync()|
+  3. Properties                                     |node-api-zlib-properties|
+
+==============================================================================
+INTRO                                                          *node-api-zlib*
+
+Stability: 2 - Stable
+
+You can access this module with:
+
+ >
+  var zlib = require('zlib');
+<
+
+This provides bindings to Gzip/Gunzip, Deflate/Inflate, and
+DeflateRaw/InflateRaw classes.  Each class takes the same options, and
+is a readable/writable Stream.
+
+<h2>Examples</h2>
+Compressing or decompressing a file can be done by piping an
+fs.ReadStream into a zlib stream, then into an fs.WriteStream.
+
+ >
+  var gzip = zlib.createGzip();
+  var fs = require('fs');
+  var inp = fs.createReadStream('input.txt');
+  var out = fs.createWriteStream('input.txt.gz');
+  
+  inp.pipe(gzip).pipe(out);
+<
+
+Compressing or decompressing data in one step can be done by using
+the convenience methods.
+
+ >
+  var input = '.................................';
+  zlib.deflate(input, function(err, buffer) {
+    if (!err) {
+      console.log(buffer.toString('base64'));
+    }
+  });
+  
+  var buffer = new Buffer('eJzT0yMAAGTvBe8=', 'base64');
+  zlib.unzip(buffer, function(err, buffer) {
+    if (!err) {
+      console.log(buffer.toString());
+    }
+  });
+<
+
+To use this module in an HTTP client or server, use the
+*node-api-http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3*
+on requests, and the
+*node-api-http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.11*
+header on responses.
+
+**Note: these examples are drastically simplified to show
+the basic concept.**  Zlib encoding can be expensive, and the results
+ought to be cached.  See *node-api-zlib_memory_usage_tuning*
+below for more information on the speed/memory/compression
+tradeoffs involved in zlib usage.
+
+ >
+  // client request example
+  var zlib = require('zlib');
+  var http = require('http');
+  var fs = require('fs');
+  var request = http.get({ host: 'izs.me',
+                           path: '/',
+                           port: 80,
+                           headers: { 'accept-encoding': 'gzip,deflate' } });
+  request.on('response', function(response) {
+    var output = fs.createWriteStream('izs.me_index.html');
+  
+    switch (response.headers['content-encoding']) {
+      // or, just use zlib.createUnzip() to handle both cases
+      case 'gzip':
+        response.pipe(zlib.createGunzip()).pipe(output);
+        break;
+      case 'deflate':
+        response.pipe(zlib.createInflate()).pipe(output);
+        break;
+      default:
+        response.pipe(output);
+        break;
+    }
+  });
+  
+  // server example
+  // Running a gzip operation on every request is quite expensive.
+  // It would be much more efficient to cache the compressed buffer.
+  var zlib = require('zlib');
+  var http = require('http');
+  var fs = require('fs');
+  http.createServer(function(request, response) {
+    var raw = fs.createReadStream('index.html');
+    var acceptEncoding = request.headers['accept-encoding'];
+    if (!acceptEncoding) {
+      acceptEncoding = '';
+    }
+  
+    // Note: this is not a conformant accept-encoding parser.
+    // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
+    if (acceptEncoding.match(/\bdeflate\b/)) {
+      response.writeHead(200, { 'content-encoding': 'deflate' });
+      raw.pipe(zlib.createDeflate()).pipe(response);
+    } else if (acceptEncoding.match(/\bgzip\b/)) {
+      response.writeHead(200, { 'content-encoding': 'gzip' });
+      raw.pipe(zlib.createGzip()).pipe(response);
+    } else {
+      response.writeHead(200, {});
+      raw.pipe(response);
+    }
+  }).listen(1337);
+<
+
+==============================================================================
+METHODS                                                *node-api-zlib-methods*
+
+------------------------------------------------------------------------------
+zlib.createGzip([options])                        *node-api-zlib.createGzip()*
+
+Returns a new *node-api-zlib_class_zlib_gzip* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createGunzip([options])                    *node-api-zlib.createGunzip()*
+
+Returns a new *node-api-zlib_class_zlib_gunzip* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createDeflate([options])                  *node-api-zlib.createDeflate()*
+
+Returns a new *node-api-zlib_class_zlib_deflate* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createInflate([options])                  *node-api-zlib.createInflate()*
+
+Returns a new *node-api-zlib_class_zlib_inflate* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createDeflateRaw([options])            *node-api-zlib.createDeflateRaw()*
+
+Returns a new *node-api-zlib_class_zlib_deflateraw* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createInflateRaw([options])            *node-api-zlib.createInflateRaw()*
+
+Returns a new *node-api-zlib_class_zlib_inflateraw* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.createUnzip([options])                      *node-api-zlib.createUnzip()*
+
+Returns a new *node-api-zlib_class_zlib_unzip* object with an
+*node-api-zlib_options*.
+
+    
+------------------------------------------------------------------------------
+zlib.deflate(buf[, options], callback)               *node-api-zlib.deflate()*
+
+Compress a string with Deflate.
+
+    
+------------------------------------------------------------------------------
+zlib.deflateSync(buf[, options])                 *node-api-zlib.deflateSync()*
+
+Compress a string with Deflate.
+
+    
+------------------------------------------------------------------------------
+zlib.deflateRaw(buf[, options], callback)         *node-api-zlib.deflateRaw()*
+
+Compress a string with DeflateRaw.
+
+    
+------------------------------------------------------------------------------
+zlib.deflateRawSync(buf[, options])           *node-api-zlib.deflateRawSync()*
+
+Compress a string with DeflateRaw.
+
+    
+------------------------------------------------------------------------------
+zlib.gzip(buf[, options], callback)                     *node-api-zlib.gzip()*
+
+Compress a string with Gzip.
+
+    
+------------------------------------------------------------------------------
+zlib.gzipSync(buf[, options])                       *node-api-zlib.gzipSync()*
+
+Compress a string with Gzip.
+
+    
+------------------------------------------------------------------------------
+zlib.gunzip(buf[, options], callback)                 *node-api-zlib.gunzip()*
+
+Decompress a raw Buffer with Gunzip.
+
+    
+------------------------------------------------------------------------------
+zlib.gunzipSync(buf[, options])                   *node-api-zlib.gunzipSync()*
+
+Decompress a raw Buffer with Gunzip.
+
+    
+------------------------------------------------------------------------------
+zlib.inflate(buf[, options], callback)               *node-api-zlib.inflate()*
+
+Decompress a raw Buffer with Inflate.
+
+    
+------------------------------------------------------------------------------
+zlib.inflateSync(buf[, options])                 *node-api-zlib.inflateSync()*
+
+Decompress a raw Buffer with Inflate.
+
+    
+------------------------------------------------------------------------------
+zlib.inflateRaw(buf[, options], callback)         *node-api-zlib.inflateRaw()*
+
+Decompress a raw Buffer with InflateRaw.
+
+    
+------------------------------------------------------------------------------
+zlib.inflateRawSync(buf[, options])           *node-api-zlib.inflateRawSync()*
+
+Decompress a raw Buffer with InflateRaw.
+
+    
+------------------------------------------------------------------------------
+zlib.unzip(buf[, options], callback)                   *node-api-zlib.unzip()*
+
+Decompress a raw Buffer with Unzip.
+
+    
+------------------------------------------------------------------------------
+zlib.unzipSync(buf[, options])                     *node-api-zlib.unzipSync()*
+
+Decompress a raw Buffer with Unzip.
+
+    
+
+==============================================================================
+PROPERTIES                                          *node-api-zlib-properties*
+
+ vim:tw=78:ts=8:ft=help

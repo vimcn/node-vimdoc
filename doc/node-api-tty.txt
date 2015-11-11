@@ -1,0 +1,57 @@
+*node-api-tty.txt*      For Node.js module `TTY` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                               *node-api-tty-contents*
+
+  1. Intro                                                      |node-api-tty|
+  2. Methods                                            |node-api-tty-methods|
+    2.1. tty.isatty(fd)                                |node-api-tty.isatty()|
+    2.2. tty.setRawMode(mode)                      |node-api-tty.setRawMode()|
+  3. Properties                                      |node-api-tty-properties|
+
+==============================================================================
+INTRO                                                           *node-api-tty*
+
+Stability: 2 - Stable
+
+The `tty` module houses the `tty.ReadStream` and `tty.WriteStream` classes. In
+most cases, you will not need to use this module directly.
+
+When io.js detects that it is being run inside a TTY context, then `process.stdin`
+will be a `tty.ReadStream` instance and `process.stdout` will be
+a `tty.WriteStream` instance. The preferred way to check if io.js is being run
+in a TTY context is to check `process.stdout.isTTY`:
+
+ >
+  $ iojs -p -e "Boolean(process.stdout.isTTY)"
+  true
+  $ iojs -p -e "Boolean(process.stdout.isTTY)" | cat
+  false
+<
+
+==============================================================================
+METHODS                                                 *node-api-tty-methods*
+
+------------------------------------------------------------------------------
+tty.isatty(fd)                                         *node-api-tty.isatty()*
+
+Returns `true` or `false` depending on if the `fd` is associated with a
+terminal.
+
+    
+------------------------------------------------------------------------------
+tty.setRawMode(mode)                               *node-api-tty.setRawMode()*
+
+A `net.Socket` subclass that represents the readable portion of a tty. In normal
+circumstances, `process.stdin` will be the only `tty.ReadStream` instance in any
+io.js program (only when `isatty(0)` is true).
+
+    
+
+==============================================================================
+PROPERTIES                                           *node-api-tty-properties*
+
+ vim:tw=78:ts=8:ft=help

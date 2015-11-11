@@ -4,7 +4,7 @@ Node.js Documentation
 https://nodejs.org
 
 ==============================================================================
-CONTENTS                                               *node-api-dns-contents*
+CONTENTS                                                   *node-api-contents*
 
   1. Intro                                                      |node-api-dns|
   2. Methods                                            |node-api-dns-methods|

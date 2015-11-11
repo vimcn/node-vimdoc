@@ -4,7 +4,7 @@ Node.js Documentation
 https://nodejs.org
 
 ==============================================================================
-CONTENTS                                            *node-api-crypto-contents*
+CONTENTS                                                   *node-api-contents*
 
   1. Intro                                                   |node-api-crypto|
   2. Methods                                         |node-api-crypto-methods|

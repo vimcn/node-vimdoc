@@ -1,0 +1,98 @@
+*node-api-punycode.txt*      For Node.js module `punycode` version v3.3.0.
+
+Node.js Documentation
+https://nodejs.org
+
+==============================================================================
+CONTENTS                                          *node-api-punycode-contents*
+
+  1. Intro                                                 |node-api-punycode|
+  2. Methods                                       |node-api-punycode-methods|
+    2.1. punycode.decode(string)                  |node-api-punycode.decode()|
+    2.2. punycode.encode(string)                  |node-api-punycode.encode()|
+    2.3. punycode.toUnicode(domain)            |node-api-punycode.toUnicode()|
+    2.4. punycode.toASCII(domain)                |node-api-punycode.toASCII()|
+  3. Properties                                 |node-api-punycode-properties|
+    3.1. punycode.ucs2                                |node-api-punycode.ucs2|
+    3.2. punycode.version                          |node-api-punycode.version|
+
+==============================================================================
+INTRO                                                      *node-api-punycode*
+
+Stability: 2 - Stable
+
+*node-api-https://mths.be/punycode* is bundled with io.js v1.0.0+ and
+Node.js v0.6.2+. Use `require('punycode')` to access it. (To use it with
+other io.js versions, use npm to install the `punycode` module first.)
+
+==============================================================================
+METHODS                                            *node-api-punycode-methods*
+
+------------------------------------------------------------------------------
+punycode.decode(string)                           *node-api-punycode.decode()*
+
+Converts a Punycode string of ASCII-only symbols to a string of Unicode symbols.
+
+ >
+  // decode domain name parts
+  punycode.decode('maana-pta'); // 'mañana'
+  punycode.decode('--dqo34k'); // '☃-⌘'
+<
+
+    
+------------------------------------------------------------------------------
+punycode.encode(string)                           *node-api-punycode.encode()*
+
+Converts a string of Unicode symbols to a Punycode string of ASCII-only symbols.
+
+ >
+  // encode domain name parts
+  punycode.encode('mañana'); // 'maana-pta'
+  punycode.encode('☃-⌘'); // '--dqo34k'
+<
+
+    
+------------------------------------------------------------------------------
+punycode.toUnicode(domain)                     *node-api-punycode.toUnicode()*
+
+Converts a Punycode string representing a domain name to Unicode. Only the
+Punycoded parts of the domain name will be converted, i.e. it doesn't matter if
+you call it on a string that has already been converted to Unicode.
+
+ >
+  // decode domain names
+  punycode.toUnicode('xn--maana-pta.com'); // 'mañana.com'
+  punycode.toUnicode('xn----dqo34k.com'); // '☃-⌘.com'
+<
+
+    
+------------------------------------------------------------------------------
+punycode.toASCII(domain)                         *node-api-punycode.toASCII()*
+
+Converts a Unicode string representing a domain name to Punycode. Only the
+non-ASCII parts of the domain name will be converted, i.e. it doesn't matter if
+you call it with a domain that's already in ASCII.
+
+ >
+  // encode domain names
+  punycode.toASCII('mañana.com'); // 'xn--maana-pta.com'
+  punycode.toASCII('☃-⌘.com'); // 'xn----dqo34k.com'
+<
+
+    
+
+==============================================================================
+PROPERTIES                                      *node-api-punycode-properties*
+
+------------------------------------------------------------------------------
+punycode.ucs2                                         *node-api-punycode.ucs2*
+
+      
+------------------------------------------------------------------------------
+punycode.version                                   *node-api-punycode.version*
+
+A string representing the current Punycode.js version number.
+
+      
+
+ vim:tw=78:ts=8:ft=help

@@ -4,7 +4,7 @@ Node.js Documentation
 https://nodejs.org
 
 ==============================================================================
-CONTENTS                                            *node-api-assert-contents*
+CONTENTS                                                   *node-api-contents*
 
   1. Intro                                                   |node-api-assert|
   2. Methods                                         |node-api-assert-methods|
